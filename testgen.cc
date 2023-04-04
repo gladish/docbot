@@ -7,24 +7,9 @@ UnitTestGeneratorVisitor::UnitTestGeneratorVisitor(clang::ASTContext *ctx, const
 }
 
 bool UnitTestGeneratorVisitor::VisitFunctionDecl(clang::FunctionDecl *func)
-{
-  if (!func->hasBody())
-    return true;
-
+{ 
   const std::string function_name = func->getNameInfo().getAsString();
-  if (!std::regex_match(function_name, m_options.FunctionNameRegex))
-    return true;
-
-  DBLOG_INFO("found match:%s", function_name.c_str());
-
-  // TODO: upload to chat_gpt and get documentation
-  printf(
-      "%s\n",
-      getFunctionSourceCode(func, m_ast_context->getSourceManager()).c_str());
-
-  // and then step2 (draw sequence diagram)
-
-  // and then step3 (generate unit tests)
+  DBLOG_INFO("found function:%s", function_name.c_str());
   return true;
 }
 

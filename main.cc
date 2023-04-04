@@ -14,11 +14,9 @@ static void print_help();
 static std::string read_file(const std::string &file_name);
 
 int main(int argc, char const *argv[])
-{  
-  std::string input_file_name;
-  std::string personality = "testbot";
-  std::vector<std::string> search_paths; 
-  docbot::Options options;   
+{      
+  docbot::Options options;
+  options.Personality = "testbot";   
 
   // capture the input_file_name from the command line using getopt_long
   while (true) {
@@ -40,10 +38,10 @@ int main(int argc, char const *argv[])
 
     switch (c) {      
       case 'f':
-        input_file_name = optarg;
+        options.InputFilename = optarg;
         break;
       case 'I':        
-        search_paths.push_back(optarg);
+        options.CompilerArgs.push_back(std::string("-I" + std::string(optarg)));
         break;
       case 'h':
         print_help();
@@ -55,13 +53,13 @@ int main(int argc, char const *argv[])
         options.ApiKey = optarg;
         break;
       case 'p':
-        personality = optarg;
+        options.Personality = optarg;
       default:
         break;
     }
   }
 
-  if (input_file_name.empty()) {
+  if (options.InputFilename.empty()) {
     DBLOG_ERROR("Need to supply an input file name");
     print_help();
     return 1;
@@ -79,27 +77,22 @@ int main(int argc, char const *argv[])
     return 1;
   }
 
-  std::vector<std::string> args;  
-  for (const auto &path : search_paths)
-    args.push_back(std::string("-I" + path));
-  args.push_back("-Wall");
+  std::string source_code = read_file(options.InputFilename);
 
-  std::string source_code = read_file(input_file_name);
-
-  if (personality == "docbot") {
+  if (options.Personality == "docbot") {
     return clang::tooling::runToolOnCodeWithArgs(
       std::make_unique<DocumentationGeneratorFrontendAction>(options), 
       source_code.c_str(),
-      args);
+      options.CompilerArgs);
   }
-  else if (personality == "testbot") {
+  else if (options.Personality == "testbot") {
     return clang::tooling::runToolOnCodeWithArgs(
       std::make_unique<UnitTestGeneratorFrontendAction>(options), 
       source_code.c_str(),
-      args);
+      options.CompilerArgs);
   }
   else
-    throw std::runtime_error("Unknown personality: " + personality);
+    throw std::runtime_error("Unknown personality: " + options.Personality);
 }
 
 void print_help()
