@@ -16,7 +16,9 @@ list(APPEND CMAKE_MODULE_PATH /usr/lib/llvm-${LLVM_VERSION}/lib/cmake/clang)
 
 add_executable(docbot 
     main.cc
-    docbot.cc
+    log.cc
+    docgen.cc
+    testgen.cc
     openai.cc)
 
 target_include_directories(docbot PRIVATE /usr/lib/llvm-${LLVM_VERSION}/include)
